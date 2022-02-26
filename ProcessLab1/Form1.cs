@@ -112,18 +112,18 @@ namespace ProcessLab1
 
             //считаем остальное
 
-
+            //мат ож в каждой точке
+            List<double> MathExps = new List<double>();
+            //дисперсия в каждой точке
+            List<double> Disp = new List<double>();
             //вероятности выпадения значения в каждой точке
-            List<double> Probs = new List<double>();
             List<(double, double)> X = new List<(double, double)>();
-            double m = 0;
-            double MathEx;
-            bool flag;
-            //мат ож
+            double MathEx, d, m;
             //фиксируем точку
             for (int i = 0; i < p; i++)
             {
                 X.Clear();
+                //Disp.Clear();
                 //фиксируем значение
                 for (int j = 0; j < N; j++)
                 {
@@ -146,27 +146,49 @@ namespace ProcessLab1
                             if (n == X.Count())
                                 m++;
                         }
-
+                    //добавялем в массив число и вероятность его выпадения
                     X.Add((Chart1.Series[j].Points[i].YValues[0], m / N));
                 }
                 MathEx = 0;
+                d = 0;
                 //считаем мат ож сечения
                 for (int n = 0; n < X.Count(); n++)
                 {
                     MathEx += X[n].Item2 * X[n].Item1;
+                    d += (Math.Pow(X[n].Item1, 2) * X[n].Item2);
                 }
+                double temp = 0;
+                for(int n = 0; n < X.Count; n++)
+                {
+                   temp = X[n].Item2 * X[n].Item1;
+                }
+                d -= (temp * temp);
                 //добавляем значениe в общий список
-                Probs.Add(MathEx);
+                Disp.Add(d);
+                MathExps.Add(MathEx);
             }
             Chart1.Series.Add("Mат Ож");
             Chart1.Series.Last().ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            Chart1.Series.Last().BorderWidth = 3;
 
-            //считаем каждую точку графика
+            Chart1.Series.Add("Mат Ож + сигма");
+            Chart1.Series.Last().ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            Chart1.Series.Last().Color = Color.Black;
+            Chart1.Series.Last().BorderWidth = 3;
+
+            Chart1.Series.Add("Mат Ож - сигма");
+            Chart1.Series.Last().ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            Chart1.Series.Last().Color = Color.Black;
+            Chart1.Series.Last().BorderWidth = 3;
+            int c = Chart1.Series.Count();
+
+            //считаем каждую точку дополнительных характеристик графика
             for (int i = 0; i < p; i++)
             {
                 t = min + i * h;
-                y = Probs[i];
-                Chart1.Series.Last().Points.AddXY(t, y);
+                Chart1.Series[c - 3].Points.AddXY(t, MathExps[i]);
+                Chart1.Series[c - 2].Points.AddXY(t, MathExps[i] + Math.Sqrt(Disp[i]));
+                Chart1.Series[c - 1].Points.AddXY(t, MathExps[i] - Math.Sqrt(Disp[i]));
             }
 
         }
